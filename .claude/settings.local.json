@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm init *)",
+      "Bash(npm install *)",
+      "Bash(npx tsc *)",
+      "Bash(npx vitest *)",
+      "Bash(npx vite *)",
+      "Bash(curl -sI http://localhost:5173)",
+      "Bash(kill %1)"
+    ]
+  }
+}

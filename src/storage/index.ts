@@ -1,0 +1,1 @@
+export { StorageManager } from './storage-manager';
