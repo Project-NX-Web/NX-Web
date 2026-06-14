@@ -1,7 +1,0 @@
-{
-  "env": {
-    "ANTHROPIC_BASE_URL": "https://api.siliconflow.com/",
-    "ANTHROPIC_AUTH_TOKEN": "sk-wgggdtgzmsjwpmdqfwnpzjnkrvozlypcrzklwbmenrpxsaxd",
-    "ANTHROPIC_MODEL": "nex-agi/Nex-N2-Pro"
-  }
-}
