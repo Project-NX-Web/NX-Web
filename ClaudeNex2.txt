@@ -1,0 +1,1 @@
+claude --model nex-agi/nex-n2-pro:free

@@ -36,4 +36,16 @@ describe('ServiceManager', () => {
     expect(sm.hasService('time')).toBe(true);
     expect(sm.hasService('missing')).toBe(false);
   });
+
+  it('returns stable service records and lists registered services', () => {
+    const sm = new ServiceManager();
+    const first = sm.registerService('time');
+    const duplicate = sm.registerService('time');
+    const second = sm.registerService('hid');
+
+    expect(duplicate).toBe(first);
+    expect(sm.getServiceRecord('time')?.id).toBe(first);
+    expect(sm.getServiceRecord('time')?.name).toBe('time');
+    expect(sm.listServices().map((service) => service.id)).toEqual([first, second]);
+  });
 });

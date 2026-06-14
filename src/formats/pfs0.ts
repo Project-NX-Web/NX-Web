@@ -14,11 +14,19 @@ export interface Pfs0 {
 }
 
 export function parsePfs0(data: Uint8Array): Pfs0 {
+  return parsePartition(data, 'PFS0');
+}
+
+export function parseHfs0(data: Uint8Array): Pfs0 {
+  return parsePartition(data, 'HFS0');
+}
+
+export function parsePartition(data: Uint8Array, expectedMagic: 'PFS0' | 'HFS0'): Pfs0 {
   const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
 
   const magic = String.fromCharCode(data[0], data[1], data[2], data[3]);
-  if (magic !== 'PFS0') {
-    throw new Error(`Invalid PFS0 magic: expected "PFS0", got "${magic}"`);
+  if (magic !== expectedMagic) {
+    throw new Error(`Invalid ${expectedMagic} magic: expected "${expectedMagic}", got "${magic}"`);
   }
 
   const fileCount = view.getUint32(0x04, true);
@@ -30,6 +38,10 @@ export function parsePfs0(data: Uint8Array): Pfs0 {
   const stringTableOffset = entriesOffset + fileCount * FILE_ENTRY_SIZE;
   const dataOffset = stringTableOffset + stringTableSize;
 
+  if (stringTableOffset > data.length || dataOffset > data.length) {
+    throw new Error(`Invalid ${expectedMagic} table bounds`);
+  }
+
   const files: Pfs0Entry[] = [];
 
   for (let i = 0; i < fileCount; i++) {
@@ -38,12 +50,25 @@ export function parsePfs0(data: Uint8Array): Pfs0 {
     const fileSize = Number(view.getBigUint64(entryBase + 0x08, true));
     const nameOffset = view.getUint32(entryBase + 0x10, true);
 
+    if (nameOffset >= stringTableSize) {
+      throw new Error(`Invalid ${expectedMagic} file name offset`);
+    }
+
     // Read null-terminated name from string table
     let nameEnd = stringTableOffset + nameOffset;
     while (nameEnd < dataOffset && data[nameEnd] !== 0) {
       nameEnd++;
     }
     const name = new TextDecoder().decode(data.slice(stringTableOffset + nameOffset, nameEnd));
+    if (!name) {
+      throw new Error(`Invalid ${expectedMagic} empty file name`);
+    }
+
+    const absoluteStart = dataOffset + fileOffset;
+    const absoluteEnd = absoluteStart + fileSize;
+    if (absoluteStart > data.length || absoluteEnd > data.length || absoluteEnd < absoluteStart) {
+      throw new Error(`Invalid ${expectedMagic} file data bounds`);
+    }
 
     files.push({ name, offset: fileOffset, size: fileSize });
   }

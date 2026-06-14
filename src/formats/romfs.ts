@@ -45,8 +45,9 @@ export function parseRomFs(data: Uint8Array): Map<string, Uint8Array> {
   const dirNames = new Map<number, string>(); // offset → full path
   parseDirTable(data, dirMetaOffset, Number(header.dirMetaTableSize), dirNames);
 
-  // Parse file table
-  parseFileTable(data, fileMetaOffset, Number(header.fileMetaTableSize), fileDataOffset, dirNames, files);
+  // Parse file table. Some minimal fixtures omit fileMetaTableSize; infer it from the data region.
+  const fileMetaTableSize = Number(header.fileMetaTableSize) || Math.max(0, fileDataOffset - fileMetaOffset);
+  parseFileTable(data, fileMetaOffset, fileMetaTableSize, fileDataOffset, dirNames, files);
 
   return files;
 }
@@ -115,7 +116,7 @@ function parseFileTable(
       name = new TextDecoder().decode(data.slice(absOffset + 0x20, absOffset + 0x20 + nameLen));
     }
 
-    if (name && fileSize > 0) {
+    if (name) {
       const dirPath = dirNames.get(parentDirOffset) ?? '';
       const fullPath = dirPath ? `${dirPath}/${name}` : name;
       const absDataStart = fileDataOffset + fileOffset;

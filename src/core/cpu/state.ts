@@ -11,10 +11,10 @@ export class CpuState {
   n: boolean = false; // Negative
   z: boolean = false; // Zero
   c: boolean = false; // Carry
-  v: boolean = false; // Overflow
+  overflow: boolean = false; // Overflow
 
   // SIMD/FP registers V0-V31 (128-bit, stored as pairs of 64-bit)
-  readonly v: Float64Array;
+  readonly vector: Float64Array;
   // FPCR and FPSR
   fpcr: number = 0;
   fpsr: number = 0;
@@ -31,7 +31,7 @@ export class CpuState {
 
   constructor() {
     this.x = new BigInt64Array(31);
-    this.v = new Float64Array(64); // 32 registers × 2 (high/low)
+    this.vector = new Float64Array(64); // 32 registers × 2 (high/low)
   }
 
   getX(reg: number): bigint {
@@ -70,14 +70,14 @@ export class CpuState {
     return (this.n ? 0x80000000 : 0) |
            (this.z ? 0x40000000 : 0) |
            (this.c ? 0x20000000 : 0) |
-           (this.v ? 0x10000000 : 0);
+           (this.overflow ? 0x10000000 : 0);
   }
 
   set nzcv(value: number) {
     this.n = (value & 0x80000000) !== 0;
     this.z = (value & 0x40000000) !== 0;
     this.c = (value & 0x20000000) !== 0;
-    this.v = (value & 0x10000000) !== 0;
+    this.overflow = (value & 0x10000000) !== 0;
   }
 
   updateFlagsNZ64(result: bigint): void {
@@ -96,10 +96,10 @@ export class CpuState {
       case 0: result = this.z; break;                    // EQ/NE
       case 1: result = this.c; break;                    // CS/CC
       case 2: result = this.n; break;                    // MI/PL
-      case 3: result = this.v; break;                    // VS/VC
+      case 3: result = this.overflow; break;             // VS/VC
       case 4: result = this.c && !this.z; break;         // HI/LS
-      case 5: result = this.n === this.v; break;         // GE/LT
-      case 6: result = this.n === this.v && !this.z; break; // GT/LE
+      case 5: result = this.n === this.overflow; break;  // GE/LT
+      case 6: result = this.n === this.overflow && !this.z; break; // GT/LE
       case 7: result = true; break;                      // AL
       default: result = true;
     }

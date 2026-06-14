@@ -1,13 +1,26 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm init *)",
-      "Bash(npm install *)",
+      "Bash(python *)",
+      "Bash(npm test *)",
+      "Bash(npm run *)",
       "Bash(npx tsc *)",
+      "Bash(npx tsx *)",
+      "Bash(node *)",
       "Bash(npx vitest *)",
-      "Bash(npx vite *)",
-      "Bash(curl -sI http://localhost:5173)",
-      "Bash(kill %1)"
+      "WebSearch",
+      "WebFetch(domain:nvlpubs.nist.gov)",
+      "WebFetch(domain:csrc.nist.gov)",
+      "Bash(make test *)",
+      "PowerShell(npm test *)",
+      "PowerShell(node --input-type=module -e 'const view=new DataView\\(new Uint8Array\\(128\\).buffer\\); const fileTableSize=80; view.setBigUint64\\(0x40,BigInt\\(fileTableSize\\),true\\); console.log\\(fileTableSize, view.getBigUint64\\(0x40,true\\)\\);')",
+      "PowerShell(node --input-type=module -e 'function align4\\(v\\){return \\(v+3\\)&~3} const files=[{path:\"data/a.txt\",data:new Uint8Array\\([1,2,3]\\)},{path:\"data/sub/b.bin\",data:new Uint8Array\\([4,5]\\)}]; const fileEntrySize=name=>align4\\(0x20+name.length\\); const fileEntries=files.map\\(file=>file\\); const fileTableSize=fileEntries.reduce\\(\\(s,f\\)=>s+fileEntrySize\\(f.name\\),0\\); console.log\\(fileEntries.length,fileTableSize\\); const view=new DataView\\(new Uint8Array\\(128\\).buffer\\); view.setBigUint64\\(0x40,BigInt\\(fileTableSize\\),true\\); console.log\\(view.getBigUint64\\(0x40,true\\)\\);')",
+      "Bash(command -v tsx)",
+      "Bash(command -v ts-node)",
+      "Bash(command -v vite-node)",
+      "Bash(./node_modules/.bin/tsc *)",
+      "PowerShell(npx vitest run src/formats/romfs.test.ts --reporter=verbose --pool=forks)",
+      "PowerShell(npm run *)"
     ]
   }
 }

@@ -37,6 +37,30 @@
     #drop-zone:hover, #drop-zone.dragover {
       border-color: #818cf8;
     }
+    #controls-panel {
+      width: 400px;
+      margin: 2rem auto;
+      padding: 1rem;
+      border: 1px solid #4a4a6a;
+      border-radius: 12px;
+      background: #232342;
+    }
+    #controls-panel h2 { margin-bottom: 0.75rem; }
+    .control-row {
+      display: grid;
+      grid-template-columns: 90px 1fr 120px;
+      gap: 0.5rem;
+      align-items: center;
+      margin: 0.35rem 0;
+    }
+    button, select {
+      font: inherit;
+      border-radius: 6px;
+      border: 1px solid #4a4a6a;
+      background: #16162b;
+      color: #eee;
+      padding: 0.35rem 0.5rem;
+    }
     canvas {
       display: none;
       width: 1280px;

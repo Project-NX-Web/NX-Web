@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NX-Web — Nintendo Switch Emulator</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #1a1a2e;
+      color: #eee;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    #app {
+      text-align: center;
+      padding: 2rem;
+    }
+    h1 { font-size: 2rem; margin-bottom: 1rem; }
+    .status { color: #4ade80; font-family: monospace; margin: 0.5rem 0; }
+    .error { color: #f87171; }
+    #drop-zone {
+      width: 400px;
+      height: 200px;
+      border: 2px dashed #4a4a6a;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 2rem auto;
+      transition: border-color 0.2s;
+    }
+    #drop-zone:hover, #drop-zone.dragover {
+      border-color: #818cf8;
+    }
+    #controls-panel {
+      width: 400px;
+      margin: 2rem auto;
+      padding: 1rem;
+      border: 1px solid #4a4a6a;
+      border-radius: 12px;
+      background: #232342;
+    }
+    #controls-panel h2 { margin-bottom: 0.75rem; }
+    .control-row {
+      display: grid;
+      grid-template-columns: 90px 1fr 120px;
+      gap: 0.5rem;
+      align-items: center;
+      margin: 0.35rem 0;
+    }
+    button, select {
+      font: inherit;
+      border-radius: 6px;
+      border: 1px solid #4a4a6a;
+      background: #16162b;
+      color: #eee;
+      padding: 0.35rem 0.5rem;
+    }
+    canvas {
+      display: none;
+      width: 1280px;
+      height: 720px;
+      max-width: 100%;
+      background: #000;
+    }
+  </style>
+  <script type="module" crossorigin src="/assets/index-CK5Y-vW_.js"></script>
+</head>
+<body>
+  <div id="app">
+    <h1>NX-Web</h1>
+    <div id="status-container"></div>
+    <div id="drop-zone">
+      <p>Drop a ROM file here (.nsp, .xci, .nro)</p>
+    </div>
+    <canvas id="screen" width="1280" height="720"></canvas>
+  </div>
+</body>
+</html>

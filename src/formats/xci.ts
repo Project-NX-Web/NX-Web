@@ -2,7 +2,7 @@
 // Structure: XCI header → HFS0 partitions (update, normal, secure)
 // The secure partition contains NCAs in PFS0/HFS0 format.
 
-import { parsePfs0, type Pfs0 } from './pfs0';
+import { parseHfs0, parsePfs0, type Pfs0 } from './pfs0';
 
 export interface XciHeader {
   magic: string;           // "HEAD"
@@ -57,7 +57,7 @@ export function parseXci(data: Uint8Array): XciFile {
 
   if (rootHfs0Offset < data.length) {
     try {
-      const rootPfs = parsePfs0(data.slice(rootHfs0Offset));
+      const rootPfs = parseHfs0(data.slice(rootHfs0Offset));
 
       // Find the "secure" partition
       for (const entry of rootPfs.files) {

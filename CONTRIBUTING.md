@@ -83,3 +83,4 @@ make build
 - Unit tests use Vitest
 - Test files live next to their source: `foo.ts` → `foo.test.ts`
 - Run `npm test` before submitting changes
+- Phase 3 Memory/CPU changes must use synthetic instruction vectors, VMM permission tests, and minimal homebrew-style fixtures only. Do not add tests that require retail ROMs, `prod.keys`, or encrypted retail NCA content.

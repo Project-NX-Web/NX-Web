@@ -1,5 +1,19 @@
 import { describe, it, expect } from 'vitest';
-import { parseKeysFile, parseTitleKeysFile, decryptAesCtr, encryptAesCtr, bytesToHex } from './crypto';
+import {
+  parseKeysFile,
+  parseTitleKeysFile,
+  decryptAesCtr,
+  encryptAesCtr,
+  decryptAesXts,
+  decryptAesXtsWithTweak,
+  splitNcaHeaderKeys,
+  resolveNcaSectionKey,
+  decryptTitleKey,
+  deriveAreaKey,
+  aesCmac,
+  validateKeySet,
+  bytesToHex,
+} from './crypto';
 
 describe('Key File Parser', () => {
   it('parses prod.keys format', () => {
@@ -102,3 +116,79 @@ describe('AES-CTR Encryption/Decryption', () => {
     expect(bytesToHex(encrypted)).toBe(bytesToHex(expected));
   });
 });
+
+describe('AES-XTS NCA Header Decryption', () => {
+  it('matches the NIST AES-XTS-AES-128 test vector', async () => {
+    const key1 = hex('2b7e151628aed2a6abf7158809cf4f3c');
+    const key2 = hex('829526457f1eb175d2a0d3cab75f5465');
+    const ciphertext = hex('4e8a953ec2fb5a3fb829c6a8fab62113');
+    const plaintext = hex('6bc1bee22e409f96e93d7e117393172a');
+    const tweak = hex('f0f1f2f3f4f5f6f7f8f9fafbfcfdfeff');
+
+    const decrypted = await decryptAesXtsWithTweak(ciphertext, key1, key2, tweak);
+    expect(decrypted).toEqual(plaintext);
+  });
+
+  it('splits a 32-byte NCA header_key into XTS key pair', () => {
+    const headerKey = new Uint8Array(32);
+    for (let i = 0; i < headerKey.length; i++) headerKey[i] = i;
+
+    const keys = splitNcaHeaderKeys(headerKey);
+    expect(bytesToHex(keys.key1)).toBe('000102030405060708090a0b0c0d0e0f');
+    expect(bytesToHex(keys.key2)).toBe('101112131415161718191a1b1c1d1e1f');
+  });
+
+  it('validates prod.keys completeness and rejects weak header keys', () => {
+    const complete = parseKeysFile(`
+      header_key = ${'00'.repeat(32)}
+      key_area_key_application_00 = ${'11'.repeat(16)}
+      titlekek_00 = ${'22'.repeat(16)}
+    `);
+    expect(validateKeySet(complete)).toEqual([]);
+
+    const missingHeader = parseKeysFile(`
+      key_area_key_application_00 = ${'11'.repeat(16)}
+    `);
+    expect(validateKeySet(missingHeader)).toContain('prod.keys is missing header_key');
+
+    const shortHeader = parseKeysFile('header_key = aabbccdd');
+    expect(validateKeySet(shortHeader)).toContain('header_key must be exactly 32 bytes for NCA AES-XTS decryption');
+  });
+
+  it('resolves NCA section keys from rights-id title keys or key-area keys', async () => {
+    const rightsId = hex('01000320000000000000000000000000');
+    const titleKey = hex('aabbccddeeff00112233445566778899');
+    const areaKey = hex('112233445566778899aabbccddeeff00');
+    const keys = parseKeysFile(`
+      header_key = ${'00'.repeat(32)}
+      key_area_key_application_01 = ${bytesToHex(areaKey)}
+    `);
+    keys.titleKeys.set(bytesToHex(rightsId), titleKey);
+
+    expect(resolveNcaSectionKey(keys, rightsId, 1)).toEqual(titleKey);
+    expect(resolveNcaSectionKey(keys, new Uint8Array(16), 1)).toEqual(areaKey);
+    expect(resolveNcaSectionKey(keys, new Uint8Array(16), 9)).toBeNull();
+  });
+
+  it('decrypts title keys and derives key-area keys with AES-CMAC', async () => {
+    const titleKek = hex('000102030405060708090a0b0c0d0e0f');
+    const encryptedTitleKey = hex('69c4e0d86a7b0430d8cdb78070b4c55a');
+    const expectedTitleKey = hex('00112233445566778899aabbccddeeff');
+    expect(await decryptTitleKey(encryptedTitleKey, titleKek)).toEqual(expectedTitleKey);
+
+    const derived = await deriveAreaKey(titleKek, 1);
+    expect(derived.length).toBe(16);
+    const cmacKey = hex('2b7e151628aed2a6abf7158809cf4f3c');
+    expect(await aesCmac(cmacKey, hex('6bc1bee22e409f96e93d7e117393172a')))
+      .toEqual(hex('070a16b46b4d4144f79bdd9dd04a287c'));
+  });
+});
+
+function hex(value: string): Uint8Array {
+  const clean = value.replace(/\s/g, '');
+  const bytes = new Uint8Array(clean.length / 2);
+  for (let i = 0; i < bytes.length; i++) {
+    bytes[i] = parseInt(clean.slice(i * 2, i * 2 + 2), 16);
+  }
+  return bytes;
+}

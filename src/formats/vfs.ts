@@ -137,7 +137,7 @@ export class VirtualFileSystem {
     if (!handle) return -1;
 
     const entry = this.entries.get(handle.entryHandle);
-    if (!entry) return -1;
+    if (!entry || entry.type !== VfsEntryType.File) return -1;
 
     // Expand file if needed
     const newSize = Math.max(entry.size, handle.position + data.length);
@@ -153,7 +153,7 @@ export class VirtualFileSystem {
 
   seek(fd: number, offset: number): boolean {
     const handle = this.openHandles.get(fd);
-    if (!handle) return false;
+    if (!handle || offset < 0) return false;
     handle.position = offset;
     return true;
   }

@@ -1,5 +1,8 @@
+import { readFileSync, existsSync } from 'node:fs';
 import { describe, it, expect } from 'vitest';
 import { parseNro } from './nro';
+import { parseRomFs } from './romfs';
+import { VirtualFileSystem } from './vfs';
 
 function buildNroBuffer(opts: { textSize?: number; roSize?: number; dataSize?: number; includeAset?: boolean } = {}): Uint8Array {
   const textSize = opts.textSize ?? 0x100;
@@ -125,5 +128,28 @@ describe('NRO Parser', () => {
     expect(nro.header.moduleId.length).toBe(32);
     expect(nro.header.moduleId[0]).toBe(0);
     expect(nro.header.moduleId[31]).toBe(31);
+  });
+
+  it('parses the official switchbrew nx-hbmenu fixture when present', () => {
+    const fixturePath = 'hbmenu.nro';
+    if (!existsSync(fixturePath)) {
+      return;
+    }
+
+    const nro = parseNro(readFileSync(fixturePath));
+
+    expect(nro.header.magic).toBe('NRO0');
+    expect(nro.header.size).toBeGreaterThan(nro.textSegment.length);
+    expect(nro.asset).not.toBeNull();
+    expect(nro.icon).not.toBeNull();
+    expect(nro.nacp).not.toBeNull();
+    expect(nro.romfs).not.toBeNull();
+
+    const romFs = parseRomFs(nro.romfs!);
+    expect(romFs.has('assets.zip')).toBe(true);
+
+    const vfs = new VirtualFileSystem();
+    vfs.mountRomFs(romFs);
+    expect(vfs.exists('romfs/assets.zip')).toBe(true);
   });
 });

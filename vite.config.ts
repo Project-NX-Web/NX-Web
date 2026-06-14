@@ -1,14 +1,14 @@
 import { defineConfig } from 'vite';
-import { resolve } from 'path';
+import { fileURLToPath, URL } from 'node:url';
 
 export default defineConfig({
   resolve: {
     alias: {
-      '@core': resolve(__dirname, 'src/core'),
-      '@formats': resolve(__dirname, 'src/formats'),
-      '@workers': resolve(__dirname, 'src/workers'),
-      '@storage': resolve(__dirname, 'src/storage'),
-      '@ui': resolve(__dirname, 'src/ui'),
+      '@core': fileURLToPath(new URL('src/core', import.meta.url)),
+      '@formats': fileURLToPath(new URL('src/formats', import.meta.url)),
+      '@workers': fileURLToPath(new URL('src/workers', import.meta.url)),
+      '@storage': fileURLToPath(new URL('src/storage', import.meta.url)),
+      '@ui': fileURLToPath(new URL('src/ui', import.meta.url)),
     },
   },
 

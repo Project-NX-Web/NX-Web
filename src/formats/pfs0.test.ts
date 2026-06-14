@@ -97,4 +97,16 @@ describe('PFS0 Parser', () => {
     const pfs0 = parsePfs0(buffer);
     expect(pfs0.files.length).toBe(0);
   });
+
+  it('rejects out-of-bounds PFS0 file names and data ranges', () => {
+    const buffer = buildPfs0Buffer([{ name: 'a.bin', data: new Uint8Array([1]) }]);
+    const view = new DataView(buffer.buffer, buffer.byteOffset, buffer.byteLength);
+
+    view.setUint32(0x20, 0x1000, true);
+    expect(() => parsePfs0(buffer)).toThrow('Invalid PFS0 file name offset');
+
+    view.setUint32(0x20, 0, true);
+    view.setBigUint64(0x18, BigInt(buffer.length + 1), true);
+    expect(() => parsePfs0(buffer)).toThrow('Invalid PFS0 file data bounds');
+  });
 });

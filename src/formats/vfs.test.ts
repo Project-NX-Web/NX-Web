@@ -37,6 +37,19 @@ describe('VirtualFileSystem', () => {
     expect(vfs.close(fd)).toBe(true);
   });
 
+  it('mounts zero-size RomFS files for enumeration', () => {
+    const vfs = new VirtualFileSystem();
+    const files = new Map<string, Uint8Array>();
+    files.set('empty.txt', new Uint8Array(0));
+
+    vfs.mountRomFs(files);
+
+    expect(vfs.exists('romfs/empty.txt')).toBe(true);
+    const fd = vfs.open('romfs/empty.txt');
+    expect(vfs.getSize(fd)).toBe(0);
+    expect(vfs.read(fd, 1)).toEqual(new Uint8Array(0));
+  });
+
   it('writes to save data files', () => {
     const vfs = new VirtualFileSystem();
     vfs.mountSaveData('0100000000000001');
@@ -76,6 +89,21 @@ describe('VirtualFileSystem', () => {
     const vfs = new VirtualFileSystem();
     const fd = vfs.open('nonexistent/path');
     expect(fd).toBe(-1);
+  });
+
+  it('rejects writes to directories and negative seeks', () => {
+    const vfs = new VirtualFileSystem();
+    const files = new Map<string, Uint8Array>();
+    files.set('file.bin', new Uint8Array([1]));
+    vfs.mountRomFs(files);
+
+    const directoryFd = vfs.open('romfs');
+    expect(directoryFd).toBeGreaterThan(0);
+    expect(vfs.write(directoryFd, new Uint8Array([1]))).toBe(-1);
+
+    const fileFd = vfs.open('romfs/file.bin');
+    expect(fileFd).toBeGreaterThan(0);
+    expect(vfs.seek(fileFd, -1)).toBe(false);
   });
 
   it('reports file size correctly', () => {
