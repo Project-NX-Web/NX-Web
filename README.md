@@ -1,6 +1,6 @@
 ## NX Web README
 NX-Web is currently a browser-native Nintendo Switch emulator scaffold with substantial synthetic HLE foundations, not
-  yet a playable commercial-game emulator.
+  yet a playable commercial-game emulator. 
 
   The project has working TypeScript/Vite infrastructure, ROM/container parsing, a synthetic ARM64 CPU interpreter path,
   VMM/memory handling, Horizon-style kernel/syscall scaffolding, synthetic service HLE, synthetic GPU/rendering
